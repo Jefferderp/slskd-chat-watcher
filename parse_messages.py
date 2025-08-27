@@ -85,7 +85,7 @@ def watch_mode(conn, db_dir):
     last_timestamp = latest_message['Timestamp']
     last_wal_modtime = get_wal_modtime(wal_path)  # This returns None if file doesn't exist
     
-    print(f"Watching {wal_path} for changes... (Press Ctrl+C to exit)")
+    # print(f"Watching {wal_path} for changes... (Press Ctrl+C to exit)")
     
     try:
         poll_count = 0
