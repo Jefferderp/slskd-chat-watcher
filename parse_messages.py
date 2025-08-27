@@ -71,9 +71,9 @@ def display_default_message(message_row):
         message = message_row['Message'] or "no message"
         print(f"[{timestamp}][{username}] {message}")
 
-def watch_mode(conn):
+def watch_mode(conn, db_dir):
     """Watch messaging.db-wal for changes and display new messages."""
-    wal_path = "messaging.db-wal"
+    wal_path = os.path.join(db_dir, "messaging.db-wal")
     
     
     # Initialize with current latest message timestamp
@@ -124,6 +124,8 @@ def main():
     """Main function to parse the database and display the most recent message."""
     # Set up command-line argument parsing
     parser = argparse.ArgumentParser(description='Parse messaging.db and display the most recent chat message')
+    parser.add_argument('directory',
+                       help='Directory containing the database file(s)')
     parser.add_argument('-m', '--message', action='store_true',
                        help='Print only the message text')
     parser.add_argument('-i', '--id', action='store_true',
@@ -137,18 +139,34 @@ def main():
     
     args = parser.parse_args()
     
+    # Validate directory exists and is accessible
+    if not os.path.exists(args.directory):
+        print(f"Error: Directory '{args.directory}' does not exist", file=sys.stderr)
+        sys.exit(1)
+    
+    if not os.path.isdir(args.directory):
+        print(f"Error: '{args.directory}' is not a directory", file=sys.stderr)
+        sys.exit(1)
+    
+    if not os.access(args.directory, os.R_OK):
+        print(f"Error: Directory '{args.directory}' is not readable", file=sys.stderr)
+        sys.exit(1)
+    
     # Validate mutual exclusivity of watch flag
     if args.watch and any([args.message, args.id, args.time, args.debug]):
         parser.error("--watch/-w cannot be used with other flags")
     
+    # Build database path
+    db_path = os.path.join(args.directory, "messaging.db")
+    
     # Connect to database (watch mode needs write access to see WAL changes)
-    conn = connect_to_database(read_only=False)
+    conn = connect_to_database(db_path, read_only=False)
     if not conn:
         sys.exit(1)
     
     try:
         if args.watch:
-            watch_mode(conn)
+            watch_mode(conn, args.directory)
         else:
             # Get the most recent message
             recent_message = get_most_recent_message(conn, show_details=args.debug)
