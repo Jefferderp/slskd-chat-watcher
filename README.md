@@ -6,4 +6,6 @@ The optional flag `--watch` will continually poll `messaging.db-wal`, and when i
 See `--help` for all flags and behaviors.
 
 # Why?
-Because `slskd` has no native feature for sending email notifications upon new messages - so I cooked this up myself.
+Because [`slskd`](https://github.com/slskd/slskd/) has no native feature for sending email notifications upon new messages - so I cooked this up myself.
+
+This script doesn't handle email, or any kind of notification delivery - it just outputs to stdout. Adapt this script to suit your own purposes, or setup your own email delivery.
